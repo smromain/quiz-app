@@ -8,62 +8,76 @@
  * Controller of the quizApp
  */
 angular.module('quizApp')
-  .controller('QuizCtrl', function ($scope, $interval, $http) {
-    $scope.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
+  .controller('QuizCtrl', function ($scope, $interval, $http, quizService, scoreKeeperFactory, storage) {
+    
+  // storage.clearAll()
+  var self = this;
+  $scope.correctAnswerCount = scoreKeeperFactory.getScore();
+  $scope.timer = {'seconds': 120};
 
-  	$scope.quiz = [];
-  $scope.correctAnswerCount = 0;
-  $scope.answerMethod = function (value, answer) {
-  	if (answer === value) {
-  		$scope.correctAnswerCount++;
-  	};
-  };
-  $scope.addQuestion = function(question) {
+  if (quizService.getQuestions().length === 0){
+    alert('loading data')
+    quizService.retrieveDatabase(function(data){
+      for (var i = 0; i < data.length; i++){
+        quizService.addQuestion(data[i])
+      } 
+    });
+  }
 
-	$http.post('http://localhost:3000', {'question': question}).success(
-  	function(data, status, headers, config){
-  		console.log(data, status, headers, config)
-  	}
-	).error(function(data, status, headers, config){
-  		console.log(data, status, headers, config)
-  	});
+  this.addQuestion = function(question) {
+    quizService.post(question).then(function(data){
+      quizService.addQuestion(data)
+    })
+  }
+
+  this.deleteQuestion = function(id){
+    var  questions = []
+    console.log('in delete')
+    quizService.deleteQuestion(id)
+    storage.set('questions', questions)
+    quizService.retrieveDatabase(function(data){
+      for (var i = 0; i < data.length; i++){
+        quizService.addQuestion(data[i])
+      } 
+    });
+    this.getQuestions(); 
+  }
+
+  this.getQuestions = function(){
+    $scope.quiz = quizService.getQuestions();
+  }
+
+
+  this.answerMethod = function(value, answer) {
+    if (answer === value) {
+      alert('you did it!')
+      scoreKeeperFactory.addScore(); 
+    };
   };
+
   this.lengthCheck = function(value) {
-  	value = value || "";
-  	if (value.length > 9) {
-  		return true;
-  	}
-  	return false
+    value = value || "";
+    if (value.length > 9) {
+      return true;
+    }
+    return false
   };
- //  $scope.timer = {'seconds': 120};
 
  //  $scope.timerOn = true;
 
  //  $scope.timerStop = function(){
-	// $interval.cancel(counter);
-	// $scope.timerOn = false;
+  // $interval.cancel(counter);
+  // $scope.timerOn = false;
  //  };
 
- //  var counter = $interval(function() {
- //  	$scope.timer['seconds'] = $scope.timer['seconds'] - 1;
- //  	if ($scope.timer['seconds'] === 0) {
- //  		$interval.cancel(counter);
- //  		document.getElementById('app').innerHTML = '<p>you lose dude.</p>';
- //  	}
- //  }, 1000);
+  var counter = $interval(function() {
+   $scope.timer['seconds'] = $scope.timer['seconds'] - 1;
+   if ($scope.timer['seconds'] === 0) {
+     $interval.cancel(counter);
+     document.getElementById('app').innerHTML = '<p>you lose dude.</p>';
+   }
+  }, 1000);
 
-this.deleteQuestion = function(id) {
-	$http.get('http://localhost:3000/delete/' + id);
-};
 
-$http.get('http://localhost:3000').success(
-  	function(data){
-  		$scope.quiz = data;
-  	}
-);
-
-});
+    this.getQuestions();
+})

@@ -1,21 +1,25 @@
-<div id="app" ng-controller="QuizCtrl as app" >{{correctAnswerCount}} correct answers!
+<div id="app" ng-controller="QuizCtrl as app" >{{correctAnswerCount.score}} correct answers!
     <li ng-repeat="question in quiz | orderBy:'difficulty'">
 		<strong>{{$index+1}}: {{ question.q }}</strong>
         <p></p>
         list items
-        <button class='btn btn-success' ng-click="answerMethod(option.value, question.answer)" ng-repeat="option in question.opts">{{option.value}}</button>
+        <button class='btn btn-success' ng-click="app.answerMethod(option.value, question.answer)" ng-repeat="option in question.opts">{{option.value}}</button>
         <p></p>
-        <button class='btn btn-danger' ng-click="app.deleteQuestion(question._id)">Delete</button>
+        <button class='btn btn-danger' ng-click="app.deleteQuestion(question._id, question)">Delete</button>
     </li>
     <h3>Submit Question</h3>
-    <form name="questionSubmit" ng-submit="addQuestion(question)">
+    <form name="questionSubmit" ng-submit="app.addQuestion(question)">
     	Question: <input type="text" ng-model="question.q" required></input>
     	<p>Answer Options</p>
-    	<input type="text" name='value1' ng-model="question.optionVal[1]" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.optionVal[1]' required></input>{{!questionSubmit.value1.$error.validator}}
-    	<input type="text" name='value2' ng-model="question.optionVal[2]" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.optionVal[2]'required></input>{{!questionSubmit.value2.$error.validator}}
-    	<input type="text" name='value3' ng-model="question.optionVal[3]" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.optionVal[3]' required></input>{{!questionSubmit.value3.$error.validator}}
-    	<input type="text" name='value4' ng-model="question.optionVal[4]" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.optionVal[4]' required></input>{{!questionSubmit.value4.$error.validator}}
+    	<input type="text" name='value1' ng-model="question.opts[0].value" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.opts[0].value' required></input>{{!questionSubmit.value1.$error.validator}}
+    	<input type="text" name='value2' ng-model="question.opts[1].value" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.opts[1].value'required></input>{{!questionSubmit.value2.$error.validator}}
+    	<input type="text" name='value3' ng-model="question.opts[2].value" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.opts[2].value' required></input>{{!questionSubmit.value3.$error.validator}}
+    	<input type="text" name='value4' ng-model="question.opts[3].value" ui-validate="'app.lengthCheck($value)'" ui-validate-watch='question.opts[3].value' required></input>{{!questionSubmit.value4.$error.validator}}
+        <br>
+        Answer Here: 
     	<input type="text" ng-model="question.answer" required></input>
+        <br>
+        Difficulty: 
     	<input type="text" ng-model="question.difficulty" required></input>
     	<button type="submit" class="button radius">Submit</button>
     </form>
