@@ -8,10 +8,8 @@
  * Factory in the quizApp.
  */
 angular.module('quizApp')
-  .factory('quizService', function (storage, $http) {
-    // Service logic
-    // ...
-// 
+  .factory('quizService', function (storage, $http, $q) {
+
     // storage.clearAll();
     function Quiz(){
 
@@ -21,24 +19,26 @@ angular.module('quizApp')
         storage.set('questions', questions); 
       };
 
-      this.post = function(question, callback){
-        $http.post('http://localhost:3000', {'question': question}).success(callback);
-          //   function(data, status, headers, config){
-          //     // console.log(data, status, headers, config)
-          //   }
-          // ).error(function(data, status, headers, config){
-          //     // console.log(data, status, headers, config)
-          //   });
+      this.post = function(question){
+        //obtain a new deferred obj, a task that finishes in the future
+        var deferred = $q.defer(); 
+        $http.post('http://localhost:3000', {
+          'question': question
+        }).success(function(data){
+          deferred.resolve(data); 
+        }).error(function(){
+          deferred.reject('There was an error')
+        })
+        return deferred.promise
       };
 
+
       this.getQuestions = function(){
-        // console.log(storage.get('questions'))
         return storage.get('questions') || [];
       };   
 
-
       this.retrieveDatabase = function(callback){
-        $http.get('http://localhost:3000').success(callback);  
+        $http.get('http://localhost:3000').success(callback)  
       }
 
       this.deleteQuestion = function(id){
